@@ -17,19 +17,11 @@ def find_curvature(leftx, rightx, ploty):
     left_fit_cr = np.polyfit(ploty*ym_per_pix, leftx*xm_per_pix, 2)
     right_fit_cr = np.polyfit(ploty*ym_per_pix, rightx*xm_per_pix, 2)
 
-    #if left_fit_cr[0] * right_fit_cr[0] < 0: # one line turns left, the other turns right
-    #    return None
-
     # Calculate the new radii of curvature
     left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
     right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
 
-    curverad = (left_curverad + right_curverad) / 2
-
-    #if curverad > 10000:
-    #    return None
-
-    return curverad
+    return (left_curverad + right_curverad) / 2
 
 def find_relative_car_position(lane_center, image_center):
     return (image_center - lane_center) * xm_per_pix

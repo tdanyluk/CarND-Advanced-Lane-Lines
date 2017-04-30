@@ -22,8 +22,9 @@ The goals / steps of this project are the following:
 [threshold]: ./output_images/thresholded.png "Thresholded image"
 [warped]: ./output_images/warped.png "Warp Example"
 [lane_finding]: ./output_images/lane_finding.png "Lane finding"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
+[unwarped]: ./output_images/unwarped.png "Unwarped image"
+[video1]: ./project_video_out.mp4 "Project Video"
+[video2]: ./challenge_video_out.mp4 "Challenge Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -40,29 +41,32 @@ You're reading it!
 
 #### 1. Briefly state how you computed the camera matrix and distortion coefficients. Provide an example of a distortion corrected calibration image.
 
-The code for this step is contained in camera_calibration.py.
+The code for this step is contained in `camera.py` starting from line 48.
 
 I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function. I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result:
 
 ![Image undistortion][undistort]
 
 ### Pipeline (single images)
 
 #### 1. Provide an example of a distortion-corrected image.
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
+Distortion correction is implemented in `camera.py` starting from line 48 and 101.
+OpenCV can simply undistort the image, given the camera matrix and the distortion coefficients.
+
 ![Image undistortion][undistort2]
 
 
 #### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
-I used a combination of gradient of lightness, gradient of saturation and saturation thresholds (thresholding steps at lines 56 through 58 in `thresholding.py`).  Here's an example of my output for this step.
+I used a threshold based on "color", in HLS color space. (`thresholding.py`).  Here's an example of my output for this step.
+I tried more sophisticated methods also, but this one proved good for the "project" and the "challenge" video.
 
 ![Thresholded image][threshold]
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
 
-The code for my perspective transform includes a function called `warp()`, which appears in lines 25 through 27 in the file `perspective.py`.  The `warp()` function takes as inputs an image (`img`), and a perspective transformation matrix (`M`). The transformation matrix is calculated by getPerspectiveTransform based on the image size and the following hardcoded source and destination points:
+The code for my perspective transform includes a function called `warp()`, which appears in lines 104 through 105 in the file `camera.py`.  The `warp()` function takes as inputs an image (`img`), and uses the perspective transformation matrix. The transformation matrix is calculated by get_perspective_transform (`camera.py` line 55) based on the image size and the following hardcoded source and destination points:
 
 ```
 src = np.float32(
@@ -105,18 +109,17 @@ f(y) = Ay^2 + By + C
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did the radius of curvature calculation in lines 27 through 40 in `lane_drawer.py`.
+I did the radius of curvature calculation in lines 12 through 24 in `lane.py`.
 First I transformed the points of the polynomial segments to world size, then I fit a new polynomial over them.
 I did the radius calculation at the lowest points of the lanes (that point is the closest to the car).
-I display the avarage of the left and right curvatures.
+I display the avarage of the left and right curvatures. (And I only change the displayed text about 3 times / second to make it more readable.)
 
-The position of vehicle calculation is in 42 through 51 in `lane_drawer.py`. It is done based on the distance of the lane center from the image center at the bottom of the image.
+The position of vehicle position calculation is in line 26 through 27 in `lane.py`. It is done based on the distance of the lane center from the image center at the bottom of the image.
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
-    
-I implemented this step in lines # through # in my code in `lane_drawer.py` in the function `drawLane()`.  Here is an example of my result on a test image:
+I implemented this step in lines 4 through 17 in my code in `lane_drawer.py` in the function `draw_lane()`.  Here is an example of my result on a test image:
 
-![alt text][image6]
+![Unwarped image][unwarped]
 
 ---
 
@@ -126,12 +129,16 @@ I implemented this step in lines # through # in my code in `lane_drawer.py` in t
 
 Here's a [link to my video result](./project_video_out.mp4)
 
+And also to the [challenge video result](./challenge_video_out.mp4)
+
 ---
 
 ### Discussion
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-It might fail in very bright conditions, or when looking out of a tunnel, because the roud could all seem white. More robust thresholding would be needed.
-It might fail 
+First I faced a problem: I did not optimize the thresholding on hard enough examples and I later discovered that my (previous) method was not good enough on some frames of the project video.
 
+It might fail in very bright weather conditions, or when looking out of a tunnel, because the roud could all seem white. More robust thresholding would be needed.
+
+It might fail when there are very sharp bends, because the window based lane line finder might not find the next lane line segment if it is at a very different place than the current. It would have to move the window more horizontally. I think that the convolution based sliding window search would handle it.

@@ -47,6 +47,10 @@ def create_demo_images(camera):
     calibration_demo(camera, 'test_images/test1.jpg',
                      "output_images/undistort2.png")
 
+    img = mpimg.imread('test_images/test1.jpg')
+    img = process_image(img, camera)
+    mpimg.imsave("output_images/unwarped.png", img)
+
     img = mpimg.imread('test_images/test3.jpg')
     undistorted = camera.undistort(img)
     thresholded = thresholding.threshold(undistorted)
@@ -54,6 +58,7 @@ def create_demo_images(camera):
                       thresholded, "output_images/thresholded.png")
     warped = camera.warp(thresholded)
     lane_finding.find_lane_polynomials(warped, "output_images/lane_finding.png")
+
 
     img = mpimg.imread('test_images/straight_lines1.jpg')
     undistorted = camera.undistort(img)
@@ -65,7 +70,6 @@ def create_demo_images(camera):
                   True, (0, 0, 255), thickness=4)
     plot_side_by_side("Undistorted", undistorted, "Warped",
                       warped, "output_images/warped.png")
-
 
 def process_image(img, camera, lane_object=None):
     if lane_object is None:
