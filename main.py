@@ -47,7 +47,7 @@ def create_demo_images(camera):
     calibration_demo(camera, 'test_images/test1.jpg',
                      "output_images/undistort2.png")
 
-    img = mpimg.imread('test_images/test1.jpg')
+    img = mpimg.imread('test_images/test3.jpg')
     undistorted = camera.undistort(img)
     thresholded = thresholding.threshold(undistorted)
     plot_side_by_side("Undistorted", undistorted, "Thresholded",

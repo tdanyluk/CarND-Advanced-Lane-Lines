@@ -22,7 +22,7 @@ def threshold(img):
     white_or_yellow_binary = boolean_to_binary(white | yellow)
 
     if config.VISUALIZE_THRESHOLD:
-        color = np.dstack((white_or_yellow_binary, white_or_yellow_binary, white_binary))
+        color = np.dstack((white_binary, white_or_yellow_binary, white_or_yellow_binary))
         cv2.imshow('debug', color)
         if cv2.waitKey() % 256 == 27:
             exit()
